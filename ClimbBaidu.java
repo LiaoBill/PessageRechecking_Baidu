@@ -23,6 +23,7 @@ public class ClimbBaidu {
 		while(scanner.hasNextLine()){
 			line = scanner.nextLine();
 			line.replaceAll("\\s", "");
+			//如果字符数高于20才进行查重分析
 			if(line.length()>20){
 				current_line_list.add(line);
 			}
@@ -40,7 +41,7 @@ public class ClimbBaidu {
 		System.out.println("cheat_line_count = "+cheat_line_count);
 		System.out.println("percentage : "+((double)cheat_line_count/current_line_list.size()));
 	}
-	//如果有些行太长就不计入总行数了
+	//进行基于行的查重
 	public static boolean checkCheating(String current_line,int line_number){
 		try{
 			System.out.println("["+line_number+"]");
@@ -104,6 +105,7 @@ public class ClimbBaidu {
 		}
 		catch(Exception e){
 			e.printStackTrace();
+			//如果百度什么也没查到或者百度因为请求过多而拒绝了请求的话,将会return false
 			System.out.println("Error occured at : "+line_number);
 			System.out.println("Line is : "+current_line);
 		}
