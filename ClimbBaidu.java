@@ -2,11 +2,13 @@ package main;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-
+//good
+//difference
+//difference2
 import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
-
+//modification
 class MyComparator implements Comparator<File>{
 
 	@Override
@@ -217,6 +219,11 @@ public class ClimbBaidu {
 			for(int i =0;i!=children.size();i++){
 				Element current_child = children.get(i);
 				String current_child_text = current_child.text();
+				
+				//block baidu zhidao suggestion
+				if(current_child_text.indexOf("的问题>>")>=0){
+					continue;
+				}
 				String question_string = question;
 				//question_string and current_child_text lcs
 				String lcs_cons = LCS_DP(current_child_text, question_string);
