@@ -2,13 +2,11 @@ package main;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-//good
-//difference
-//difference2
+
 import org.jsoup.*;
 import org.jsoup.nodes.*;
 import org.jsoup.select.*;
-//modification
+
 class MyComparator implements Comparator<File>{
 
 	@Override
