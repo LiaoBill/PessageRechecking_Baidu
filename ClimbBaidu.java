@@ -1,4 +1,4 @@
-package org.main;
+package main;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
@@ -35,11 +35,15 @@ public class ClimbBaidu {
 	private static String baidu_url="http://www.baidu.com/s?wd=";
 	private static final double CHEAT_CHECK_VALUE = 0.8;
 	private static List<String> check_result;
+	private static List<String> statistics_result;
 	private static int all_line_size = 0;
 	private static int all_cheating_line_size = 0;
 	
+	private static String FOLDER_PATH = "C:\\MyFiles\\Working\\Unity\\SixFloor\\TechinicalReview_1\\Unity_Standard_查重\\TXT"; 
+	private static String STATISTIC_RESULT_PATH = "C:\\MyFiles\\Working\\Unity\\SixFloor\\TechinicalReview_1\\Unity_Standard_查重\\_RESULT\\statistics_result.txt";
+	private static String CHECK_RESULT_PATH = "C:\\MyFiles\\Working\\Unity\\SixFloor\\TechinicalReview_1\\Unity_Standard_查重\\_RESULT\\check_result.txt";
 	public static void main(String[] args)throws Exception{
-		String file_path = "E:\\MyFiles\\Working\\Unity\\TechinicalReview_1\\Unity_标准教程5月25日\\Unity 5.X标准教程5月25日\\Unity 5.X标准教程5月25日\\TXT_查重\\查重使用文件";
+		String file_path = FOLDER_PATH;
 		
 		File directory = new File(file_path);
 		
@@ -55,6 +59,7 @@ public class ClimbBaidu {
 		
 		//init check_result list
 		check_result = new ArrayList<String>();
+		statistics_result = new ArrayList<String>();
 		
 		for(int i =0;i!=files.length;i++){
 			//check is_directory
@@ -74,16 +79,24 @@ public class ClimbBaidu {
 		double whole_percentage = (double)all_cheating_line_size/all_line_size;
 		//add to check result
 		check_result.add("whole precentage : "+whole_percentage);
+		statistics_result.add("whole precentage : "+whole_percentage);
 		//output check result list
 		outputList();
 		
 	}
 	
 	public static void outputList() throws Exception{
-		String file_path = "E:\\MyFiles\\Working\\Unity\\TechinicalReview_1\\Unity_标准教程5月25日\\Unity 5.X标准教程5月25日\\Unity 5.X标准教程5月25日\\TXT_查重\\统计结果\\cons.txt";
+		String file_path = CHECK_RESULT_PATH;
 		PrintWriter printWriter = new PrintWriter(file_path,"utf-8");
 		for(int i =0;i!=check_result.size();i++){
 			String current_line = check_result.get(i);
+			printWriter.println(current_line);
+		}
+		printWriter.close();
+		file_path = STATISTIC_RESULT_PATH;
+		printWriter = new PrintWriter(file_path,"utf-8");
+		for(int i =0;i!=statistics_result.size();i++){
+			String current_line = statistics_result.get(i);
 			printWriter.println(current_line);
 		}
 		printWriter.close();
@@ -102,7 +115,7 @@ public class ClimbBaidu {
 			
 			//getting rid of all blanks
 			line = line.replaceAll("\\s", "");
-			//getting rid of 中文全角空格
+			//getting rid of 涓枃鍏ㄨ绌烘牸
 			line = line.replaceAll("[\u3000]", "");
 			line = line.toLowerCase();
 			//if current line is code and not comment of the code
@@ -122,7 +135,7 @@ public class ClimbBaidu {
 			
 			if((i+1)%10==0){
 				//sleep 3s per 10 subjects
-				Thread.sleep(3000);
+				Thread.sleep(1000);
 			}
 			else{
 				//sleep 1s per subject
@@ -137,6 +150,7 @@ public class ClimbBaidu {
 		
 		//out_put
 		check_result.add("check file name : "+file.getName());
+		statistics_result.add("check file name : "+file.getName());
 		System.out.println("check file name : "+file.getName());
 		
 		//output statistic values
@@ -145,6 +159,7 @@ public class ClimbBaidu {
 		all_cheating_line_size += cheat_line_count;
 		
 		check_result.add("cheating percentage : "+((double)cheat_line_count/whole_line_count));
+		statistics_result.add("cheating percentage : "+((double)cheat_line_count/whole_line_count));
 		System.out.println("cheating percentage : "+((double)cheat_line_count/whole_line_count));
 		
 		//output list for recording
@@ -154,7 +169,7 @@ public class ClimbBaidu {
 		scanner.close();
 	}
 	
-	 public static boolean isContainChinese(String str) {
+	public static boolean isContainChinese(String str) {
         Pattern p = Pattern.compile("[\u4e00-\u9fa5]");
         Matcher m = p.matcher(str);
         if (m.find()) {
@@ -162,15 +177,15 @@ public class ClimbBaidu {
         }
         return false;
     }
-	
-	//baidu cheat checker
 	public static boolean checkCheating(String current_line,int line_number){
 		try{
 			boolean is_cheating = false;
 			//out_put
 			System.out.println("["+line_number+"]");
+			//add into check result
+			check_result.add("["+line_number+"]");
 			System.out.println(current_line);
-			
+			check_result.add(current_line);
 			//get current line as question combining with baidu url
 			String question = current_line;
 			
@@ -186,11 +201,12 @@ public class ClimbBaidu {
 			//extract the first result of Baidu searching
 			Element div_1 = document.getElementById("1");
 			
-			//check if div_1 is null
+			//check if div_1 is null, means nothing searched
 			if(div_1==null){
 				//if it is, stands for no result, which means not cheating
 				is_cheating = false;
 				System.out.println("NOT_CHEATING");
+				check_result.add("NOT_CHEATING");
 				return is_cheating;
 			}
 			
@@ -198,114 +214,45 @@ public class ClimbBaidu {
 			
 			//get children of div_1
 			Elements children = div_1.children();
-			
-			//extract h3 which is the first child of div_1
-			Element h3 = children.get(0);
-			
-			//get h3's first child which is a <a></a> tag
-			Element h3_a = h3.child(0);
-			
-			//get all <em></em> tag from tag <a></a>
-			Elements h3_a_em = h3_a.children();
-			
-			//count all em length, which <em></em> stands for the common part of question and the searching result
-			int all_em_length = 0;
-			for(int i =0;i!=h3_a_em.size();i++){
-				//get current_em_text
-				String current_em_text = h3_a_em.get(i).text();
-				
-				//deal with current_em_text
-				//replace all blanks
-				current_em_text = current_em_text.replaceAll("\\s", "");
-				//get to lower case
-				current_em_text = current_em_text.toLowerCase();
-				
-				all_em_length+=current_em_text.length();
-			}
-			
-			//title percentage
-			double h3_percentage = (double)all_em_length/all_length;
-			
-			//if more than 80%, then seen as cheating from internet
-			if(h3_percentage>CHEAT_CHECK_VALUE){
-				is_cheating = true;
-				//out_put
-				System.out.println("cheating");
-				return is_cheating;
-			}
-			
-			//if title not fit for cheating, search for the searching result's content
-			Elements div_content_ems = null;
-			for(int i =1;i < children.size();i++){
-				
-				//get one child from children, but not h3
-				Element current_no_h3 = children.get(i);
-				
-				//get div_content_ems which stands for <em></em>s in div_content
-				div_content_ems = current_no_h3.select("em");
-				//check whether the em list is size 0
-				if(div_content_ems!=null&&div_content_ems.size()!=0){
-					break;
-				}
-			}
-			//check div_content_ems is still null
-			if(div_content_ems == null){
-				//if it is still null,which stands for no ems
-				is_cheating = false;
-				System.out.println("NOT_CHEATING");
-				return is_cheating;
-			}
-			
-			/*
-			//get div_content by query
-			Elements div_contents = children.select("div[class=c-abstract]");
-			
-			//get div_content
-			Element div_content = div_contents.first();
-			
-			//check if div_content is null
-			if(div_content == null){
-				//if it is means may be english
-				div_contents = children.select("div[class=c-abstract c-abstract-en]");
-				div_content = div_contents.first();
-				//check if div_content is null
-				if(div_content == null){
-					//if still null
-					is_cheating = false;
-					System.out.println("NOT_CHEATING");
+
+			//use children to get children text
+			for(int i =0;i!=children.size();i++){
+				Element current_child = children.get(i);
+				String current_child_text = current_child.text();
+				String question_string = question;
+				//question_string and current_child_text lcs
+				String lcs_cons = LCS_DP(current_child_text, question_string);
+				//<debug_output>
+//				System.out.println("text() : "+current_child_text);
+//				System.out.println("lcs_cons : "+lcs_cons);
+				//</debug_output>
+				int common_part_length = lcs_cons.length();
+				double percentage = (double)common_part_length/all_length;
+				if(percentage>CHEAT_CHECK_VALUE){
+					System.out.println(lcs_cons);
+					check_result.add(lcs_cons);
+					
+					//get url
+					Elements a_tags = div_1.getElementsByTag("a");
+					if(a_tags != null&&a_tags.size()!=0){
+						for(int j = 0;j!=a_tags.size();j++){
+							Element current_a = a_tags.get(j);
+							String current_a_url = current_a.attr("href");
+							System.out.println(current_a_url);
+							check_result.add(current_a_url);
+							break;
+						}
+					}
+					
+					is_cheating = true;
+					System.out.println("cheating");
+					check_result.add("cheating");
 					return is_cheating;
 				}
-			}*/
-			
-
-			
-			//we can use another integer or just reset it to 0, count all <em></em> length
-			//for output debug
-			StringBuffer output_debug_string = new StringBuffer("");
-			all_em_length = 0;
-			for(int i =0;i!=div_content_ems.size();i++){
-				String current_em_text = div_content_ems.get(i).text();
-				
-				//deal with current_em_text
-				//replace all blanks
-				current_em_text = current_em_text.replaceAll("\\s", "");
-				//get to lower case
-				current_em_text = current_em_text.toLowerCase();
-				//append current
-				output_debug_string.append(current_em_text+" ");
-				//add to length
-				all_em_length+=current_em_text.length();
 			}
-			//output for debugging
-			System.out.println(output_debug_string.toString());
-			
-			double content_percentage = (double)all_em_length/all_length;
-			if(content_percentage>CHEAT_CHECK_VALUE){
-				is_cheating = true;
-				System.out.println("cheating");
-				return is_cheating;
-			}
+			is_cheating = false;
 			System.out.println("NOT_CHEATING");
+			check_result.add("NOT_CHEATING");
 			return is_cheating;
 		}
 		catch(Exception e){
@@ -316,5 +263,60 @@ public class ClimbBaidu {
 		}
 		//if error occured, we should not put it into cheating count
 		return false;
+	}
+	
+	
+	//use dp O(m*n) to implement LCS algorithm, return lcs part
+	private static String LCS_DP(String a,String b){
+		int a_length = a.length();
+		int b_length = b.length();
+		int[][] p = new int[b_length+1][a_length+1];
+		for(int i =0;i!= b_length+1;i++){
+			for(int j =0;j!=a_length+1;j++){
+				p[i][j] = 0;
+			}
+		}
+		/*check use*/
+		/*
+		for(int i =0;i!= b_length+1;i++){
+			for(int j =0;j!=a_length+1;j++){
+				System.out.print(p[i][j]);
+			}
+			System.out.println();
+		}
+		*/
+		
+		for(int i =1;i!=b_length+1;i++){
+			for(int j =1;j!=a_length+1;j++){
+				if(a.charAt(j-1)==b.charAt(i-1)){
+					p[i][j] = p[i-1][j-1]+1;
+				}
+				else if(p[i-1][j]>=p[i][j-1]){
+					p[i][j] = p[i-1][j];
+				}
+				else{
+					p[i][j] = p[i][j-1];
+				}
+			}
+		}
+		StringBuffer cons = new StringBuffer("");
+		int m = b_length;
+	    int n = a_length;
+	    while(m!=0&&n!=0){
+	        if(a.charAt(n-1)==b.charAt(m-1)){
+	            cons.append(a.charAt(n-1));
+	            n--;
+	            m--;
+	        }
+	        else if(p[m-1][n]>=p[m][n-1]){
+	            m--;
+	        }
+	        else{
+	            n--;
+	        }
+	    }
+	    String cons_string = cons.reverse().toString();
+	    
+	    return cons_string;
 	}
 }
